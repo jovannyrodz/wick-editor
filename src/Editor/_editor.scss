@@ -20,7 +20,7 @@
 @import './_wickbrand.scss';
 
 $menu-bar-height: 40px;
-$toolbox-height: 40px;
+$toolbox-height: 700px;
 $medium-toolbox-height: 80px;
 $splitter-width: 3px;
 
@@ -30,21 +30,26 @@ body {
 }
 
 .toolbox-container {
+  overflow: hidden;
+  margin-top: 10px;
   height: $toolbox-height;
   transition-timing-function: ease-in-out;
   transition: width .5s, height .5s; 
 }
 
 .toolbox-container-medium {
+  overflow: hidden;
   height: $medium-toolbox-height;
 }
 
 .toolbox-container-small {
+  overflow: hidden;
   height: $medium-toolbox-height;
 }
 
 .editor-canvas-timeline-panel {
-  height: calc(100% - #{$toolbox-height});
+  overflow: hidden;
+  height: 100%; //height: calc(100% - #{$toolbox-height});
   transition-timing-function: ease-in-out;
   transition: width .5s, height .5s; 
 }
@@ -80,7 +85,7 @@ body {
 #flexible-container {
   height: calc(100% - #{$menu-bar-height});
   width: 100%;
-  background-color: #AAA;
+  background-color: #111;
   display: inline-block;
   position: absolute;
   top: #{$menu-bar-height};
@@ -192,7 +197,7 @@ body {
 
 .reflex-container > .reflex-element {
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   height: 100%;
   width: 100%; }
 
