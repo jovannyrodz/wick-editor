@@ -949,45 +949,53 @@ class Editor extends EditorCore {
           </DockedPanel>
         </div>
 
+      
         {/* Main Editor Panel */}
-
         <div id="editor-body">
           <div className={classNames({"mobile-editor-body": (renderSize === "small")})} id="flexible-container">
             {/*App*/}
+
             <ReflexContainer windowResizeAware={true} orientation="vertical">
+            
               {/* Middle Panel */}
               <ReflexElement {...this.resizeProps}>
-                {/*Toolbox*/}
-                <div className={classNames("toolbox-container", {'toolbox-container-medium': renderSize === 'medium'}, {'toolbox-container-small': renderSize === 'small'})}>
-                  <DockedPanel showOverlay={this.state.previewPlaying}>
-                    <Toolbox
-                      project={this.state.project}
-                      getActiveToolName={() => this.getActiveTool().name}
-                      activeToolName={this.getActiveTool().name}
-                      setActiveTool={this.setActiveTool}
-                      getToolSetting={this.getToolSetting}
-                      setToolSetting={this.setToolSetting}
-                      previewPlaying={this.state.previewPlaying}
-                      editorActions={this.actionMapInterface.editorActions}
-                      getToolSettingRestrictions={this.getToolSettingRestrictions}
-                      showCanvasActions={this.state.showCanvasActions}
-                      showBrushModes={this.state.showBrushModes}
-                      toggleCanvasActions={this.toggleCanvasActions}
-                      toggleBrushModes={this.toggleBrushModes}
-                      colorPickerType={this.state.colorPickerType}
-                      changeColorPickerType={this.changeColorPickerType}
-                      updateLastColors={this.updateLastColors}
-                      lastColorsUsed={this.state.lastColorsUsed}
-                      keyMap={this.getKeyMap()}
-                      renderSize={renderSize}
-                    />
-                  </DockedPanel>
-                </div>
                 <div className={classNames("editor-canvas-timeline-panel", {'editor-canvas-timeline-panel-medium': renderSize === 'medium'}, {'editor-canvas-timeline-panel-small': renderSize === 'small'})}>
                   <ReflexContainer windowResizeAware={true} orientation="horizontal">
                     {/* Canvas and Popout Outliner */}
                     <ReflexElement>
                       <ReflexContainer windowResizeAware={true} orientation="vertical">
+
+                          {/*Toolbox*/}
+                          <ReflexElement className="left-pane" minSize="30" maxSize="40">
+                          <div className="pane-content">
+                            <div className={classNames("toolbox-container")}>
+            
+                                <Toolbox
+                                  project={this.state.project}
+                                  getActiveToolName={() => this.getActiveTool().name}
+                                  activeToolName={this.getActiveTool().name}
+                                  setActiveTool={this.setActiveTool}
+                                  getToolSetting={this.getToolSetting}
+                                  setToolSetting={this.setToolSetting}
+                                  previewPlaying={this.state.previewPlaying}
+                                  editorActions={this.actionMapInterface.editorActions}
+                                  getToolSettingRestrictions={this.getToolSettingRestrictions}
+                                  showCanvasActions={this.state.showCanvasActions}
+                                  showBrushModes={this.state.showBrushModes}
+                                  toggleCanvasActions={this.toggleCanvasActions}
+                                  toggleBrushModes={this.toggleBrushModes}
+                                  colorPickerType={this.state.colorPickerType}
+                                  changeColorPickerType={this.changeColorPickerType}
+                                  updateLastColors={this.updateLastColors}
+                                  lastColorsUsed={this.state.lastColorsUsed}
+                                  keyMap={this.getKeyMap()}
+                                  renderSize={renderSize}
+                                />
+                            
+                              </div>
+                          </div>
+                          </ReflexElement>
+
                         {/*Canvas*/}
                         <ReflexElement {...this.resizeProps}>
                           <DockedPanel>
@@ -1059,6 +1067,9 @@ class Editor extends EditorCore {
                           />
                         </ReflexElement>}
                       </ReflexContainer>
+
+
+                      
                     </ReflexElement>
 
                     {(renderSize === "small") && <ReflexSplitter {...this.resizeProps} className="mobile-reflex-splitter"/>}
@@ -1134,11 +1145,16 @@ class Editor extends EditorCore {
                     </ReflexElement>
                   </ReflexContainer>
                 </div>
+
+                
+
               </ReflexElement>
 
               {/* Right Sidebar */}
               {!(renderSize === "small") && <ReflexSplitter {...this.resizeProps}/>}
               {!(renderSize === "small") &&
+
+              
 
                 <ReflexElement
                 size={250}
@@ -1173,7 +1189,6 @@ class Editor extends EditorCore {
                       />
                     </DockedPanel>
                   </ReflexElement>
-
           
                   {/* Outliner */}
                   {renderSize === 'medium' && <ReflexSplitter {...this.resizeProps}/>}
