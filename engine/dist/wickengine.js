@@ -45739,7 +45739,7 @@ Wick = {
   _originals: {} // Eventually store a single instance of each type of Wick.Base object (see Wick.Base constructor).
 
 };
-console.log('Wick Engine version Jova"' + Wick.version + '" is available.'); // Ensure that the Wick namespace is accessible in environments where globals are finicky (react, webpack, etc)
+console.log('Wick Engine version "' + Wick.version + '" is available.'); // Ensure that the Wick namespace is accessible in environments where globals are finicky (react, webpack, etc)
 
 window.Wick = Wick;
 /*
