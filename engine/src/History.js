@@ -80,29 +80,29 @@ Wick.History = class {
      * @param {number} filter - the filter to choose which objects to serialize. See Wick.History.StateType
      * @param {string} actionName - Optional: Name of the action conducted to generate this state. If no name is presented, "Unknown Action" is presented in its place.
      */
-    pushState (filter, actionName) {
+    pushState(filter, actionName) {
         this._redoStack = [];
         let now = Date.now();
-
+    
         let state = this._generateState(filter);
+    
         let objects = new Set(state.map(obj => obj.uuid));
         let stateObject = {
-            state: this._generateState(filter), 
-            objects: objects,
-            actionName: actionName || "Unknown Action",
-            timeSinceLastPush: now - this.lastHistoryPush,
-        }
-
+          state,
+          objects,
+          actionName: actionName || "Unknown Action",
+          timeSinceLastPush: now - this.lastHistoryPush
+        };
         this.lastHistoryPush = now;
-
+    
         this._undoStack.push(stateObject);
+    
         this._undoStack = this._undoStack.slice(-64); // get the last 64 items in the undo stack
-    }
-
-    /**
-     * Pop the last state in the undo stack off and apply the new last state to the project.
-     * @returns {boolean} True if the undo stack is non-empty, false otherwise
-     */
+      }
+      /**
+       * Pop the last state off the undo stack off apply the new state to the project.
+       * @returns {boolean} True if the undo stack is non-empty, false otherwise
+       */
     popState () {
         if(this._undoStack.length <= 1) {
             return false;
@@ -129,24 +129,24 @@ Wick.History = class {
      * Recover a state that was undone.
      * @returns {boolean} True if the redo stack is non-empty, false otherwise
      */
-    recoverState () {
-        if(this._redoStack.length === 0) {
-            return false;
+     recoverState() {
+        if (this._redoStack.length === 0) {
+          return false;
         }
-
-        var recoveredState = this._redoStack.pop().state;
-        this._undoStack.push(recoveredState);
-
+    
+        let recovered = this._redoStack.pop();
+        this._undoStack.push(recovered);
+    
+        var recoveredState = recovered.state;
         this._recoverState(recoveredState);
-
         return true;
-    }
-
-    /**
-     *
-     * @param {string} name - the name of the snapshot
-     * @param {number} filter - the filter to choose which objects to serialize. See Wick.History.StateType
-     */
+      }
+      /**
+       *
+       * @param {string} name - the name of the snapshot
+       * @param {number} filter - the filter to choose which objects to serialize. See Wick.History.StateType
+       */
+      
     saveSnapshot (name, filter) {
         this._snapshots[name] = this._generateState(filter || Wick.History.StateType.ALL_OBJECTS_WITHOUT_PATHS);
     }
