@@ -118,9 +118,14 @@ Wick.Project = class extends Wick.Base {
 
         this._scriptSchedule = [];
         this._error = null;
-
         this.history.project = this;
         this.history.pushState(Wick.History.StateType.ONLY_VISIBLE_OBJECTS);
+
+        window.panther = this;
+        this.libClipAssets = [];
+        this.dynamicClips = [];
+        this.orderedLayers = [];
+
     }
 
 
@@ -522,6 +527,104 @@ Wick.Project = class extends Wick.Base {
         return this.getAssets().find(asset => {
             return asset.name === name;
         });
+    }
+
+    /**
+     *  Function activated from cmd+l for storing 
+     *  a clip to asset library and remove it from parent frame
+     */
+    importClipToLib(clip) {
+        panther.tempClip2Delete = clip;
+        Wick.ClipAsset.fromClip(clip, this, this.addAssetToLibrary);
+    }
+
+    /**
+     *  function to update the asset name when is repeated in the asset lib.
+     */
+    updateAssetName(asset) {
+        if(panther.getAssetByName(asset.name)) {
+            let name = asset.name;
+            let cpNum = 0;
+            name = name.replace(".wickobj", "");
+            if(name.includes("_cp")) {
+                try {cpNum = parseInt(name.split("_cp")[1]) + 1;}
+                catch {}
+                name = name.split("_cp")[0] + "_cp"+cpNum+".wickobj";
+            }
+            else {
+                name = name+"_cp"+cpNum+".wickobj";
+            }
+            asset.name = name;
+            panther.updateAssetName(asset);
+        }
+    }
+  
+    /**
+     *  Callback function activated from cmd+l for storing 
+     *  a clip to asset library and remove it from parent frame
+     */
+    addAssetToLibrary(asset) {
+        panther.updateAssetName(asset)
+
+        panther.addAsset(asset);
+        let parentFrame = panther.tempClip2Delete.parentFrame;
+        let siblings = parentFrame._children;
+        let index = panther.tempClip2Delete.depth;
+        siblings.splice(index, 1);
+        panther.selection.clear();
+        parentFrame.view.render();
+        console.log(" "); // force view to update
+    }
+
+    /**
+     *  Function to store all clip assets in memory
+     */
+    loadLibClips() {
+        this.dynamicClips = [];
+        this.libClipAssets = [];
+        for(let asset of this.assets) {
+            if(asset.name.includes(".wickobj")) {
+                this.libClipAssets.push(asset);
+            }
+        }
+    }
+
+    /**
+     * Callback to create clips at run time
+     */
+    loadLibClipsToMemory() {
+        for(let clipAsset of this.libClipAssets) {
+            clipAsset.createInstance(this.addDynamicAssetClip, this);
+        }
+    }
+
+    /**
+     * Callback for adding Dynamic clips to array when clip is ready
+     */
+    addDynamicAssetClip(clip) { 
+        panther.dynamicClips.push(clip);
+    }
+
+    /**
+     * Filling this.orderedLayers array for dynamic asset's lib clip performance
+     */
+    orderDynamicFrames() {
+        this.orderedLayers = [];
+        let layerNumber = 0;
+        for (let layer of this.focus.timeline.layers) {
+            this.orderedLayers[layerNumber] = [];
+            for (let fIndex = 0; fIndex<layer.length; fIndex++) {
+                let fplay = fIndex+1;
+
+                for(let normalFrame of layer.frames) {
+                    if(normalFrame.inPosition(fplay)) {
+                        this.orderedLayers[layerNumber].push(normalFrame);
+                        break;
+                    }
+                }
+            }
+            layerNumber++;
+        }
     }
 
     /**
@@ -1545,6 +1648,11 @@ Wick.Project = class extends Wick.Base {
 
         this._playing = true;
         this.view.paper.view.autoUpdate = false;
+
+        this.loadLibClips();
+        this.loadLibClipsToMemory();
+        this.orderDynamicFrames();
+
 
         if (this._tickIntervalID) {
             this.stop();

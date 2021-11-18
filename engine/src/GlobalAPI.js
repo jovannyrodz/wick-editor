@@ -35,6 +35,7 @@ GlobalAPI = class {
             'onEvent',
             'hideCursor','showCursor',
             'hitTestOptions',
+            'attachClip',
         ];
     }
 
@@ -65,6 +66,124 @@ GlobalAPI = class {
 
         return members;
     }
+
+    attachClip(assetName, args = {x:0, y:0, scaleX:9999, scaleY:9999, scale:9999, opacity:1, rotation:0, layer:0}) {
+        let asName = assetName;
+        let pp = project.project;
+        let p  = project;
+        let dClip = null;
+        let x  = 0;
+        let y  = 0;
+        let sx = 9999;
+        let sy = 9999;
+        let op = 1;
+        let rt = 0;
+        let ly = 0;
+        let sc = 9999;
+
+        // Add extension
+        if(!asName.includes(".wickobj")) {
+            asName+= ".wickobj"
+        }
+
+        let asset = pp.getAssetByName(asName);
+        let assetFound = false;
+
+        for(let clipLibAsset of pp.libClipAssets) {
+            if(clipLibAsset == asset){
+                assetFound = true;
+                break;
+            }
+        }
+
+        if(!assetFound) {
+            return;
+        }
+
+        let clipFound = false;
+        for(let dynClip of pp.dynamicClips) {
+            if(dynClip.assetSourceUUID == asset.uuid) {
+                dClip = dynClip;
+                clipFound = true;
+                break;
+            }
+        }
+
+        if(!clipFound) {
+            return;
+        }
+
+        //args = {x:0, y:0, scaleX:9999, scaleY:9999, opacity:1, rotation:0, layer:0}
+
+        if(args.x) {
+            x = args.x;
+        }
+
+        if(args.y) {
+            y = args.y;
+        }
+
+        if(args.scaleX) {
+            sx = args.scaleX;
+        }
+
+        if(args.scaleY) {
+            sy = args.scaleY;
+        }
+
+        if(args.scale) {
+            sc = args.scale;
+        }
+
+        if(args.opacity) {
+            op = args.opacity;
+        }
+
+        if(args.rotation) {
+            rt = args.rotation;
+        }
+
+        if(args.layer) {
+            ly = args.layer;
+        }
+
+        if(ly >= p.timeline.layers.length) {
+            ly = p.timeline.layers.length-1;
+        } else if(ly<0) {
+            ly = 0;
+        }
+
+        let dFrame = pp.orderedLayers[ly][pp.focus.timeline.playheadPosition-1];
+
+        if(dFrame === undefined || dFrame === null) {
+            throw new Error("There is no frame associated to the Layer number");
+            return;
+        }
+        
+        dFrame.addClip(dClip);
+        let cloneClip = dClip.clone();
+        dFrame.removeChild(dClip);
+
+        cloneClip.x = x;
+        cloneClip.y = y;
+        cloneClip.rotation = rt;
+        cloneClip.opacity = op;
+        
+        if(sx!=9999) {
+            cloneClip.scaleX = sx;
+        }
+
+        if(sy!=9999) {
+            cloneClip.scaleY = sy;
+        }
+
+        if(sc!=9999) {
+            cloneClip.scale = sc;
+        }
+
+        return cloneClip;
+    }
+    
 
     /**
      * Stops the timeline of the object's parent clip.

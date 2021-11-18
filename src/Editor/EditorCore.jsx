@@ -1778,6 +1778,14 @@ class EditorCore extends Component {
       });
   }
 
+  exportClipToLib = () => {
+      var clip = this.project.selection.getSelectedObject();
+      if(!clip) return;
+      if(!(clip instanceof window.Wick.Clip)) return;
+
+      this.project.importClipToLib(clip);
+  }
+
   onEyedropperPickedColor = (e) => {
       this._onEyedropperPickedColor(e.color);
       this.activateLastTool();

@@ -299,6 +299,10 @@ class HotKeyInterface extends Object {
         name: "Export Selected Clip",
         sequences: ['meta+e'],
       }, 
+      'export-clip-to-lib': {
+        name: "Export Clip to Lib",
+        sequences: ['meta+l'],
+      },
       'export-project-to-new-window': {
         name: "Export Project to New Window",
         sequences: ['alt+k']
@@ -422,6 +426,7 @@ class HotKeyInterface extends Object {
       "Export": [
         "export-project-as-wick-file",
         "export-selection",
+        "export-clip-to-lib",
       ],
       "Preview": [
         "preview-play-toggle",
@@ -493,6 +498,7 @@ class HotKeyInterface extends Object {
       'create-clip-from-selection': (() => this.editor.createClipFromSelection("", false)),
       'break-apart-selection': (() => this.editor.breakApartSelection()),
       'export-selection': this.editor.exportSelectedClip,
+      'export-clip-to-lib': this.editor.exportClipToLib,
       'toggle-onion-skinning': this.editor.toggleOnionSkin,
       'toggle-clip-borders': this.editor.toggleClipBorders,
       'finish-repeating': this.finishRepeating,
