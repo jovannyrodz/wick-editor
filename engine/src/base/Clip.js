@@ -64,7 +64,18 @@ Wick.Clip = class extends Wick.Tickable {
     }
 
     this._clones = []; //this._memoizedConvexHull = null;
+    this._depth = -1;
+    try
+    {
+      //this.importClipToLib();
+    }
+    catch{
+      console.log("Try error");
+    }
   }
+
+  
+
 
   _serialize(args) {
     var data = super._serialize(args);
@@ -1252,7 +1263,6 @@ Wick.Clip = class extends Wick.Tickable {
    * @type {number}
    */
 
-
   get x() {
     return this.transformation.x;
   }
@@ -1266,6 +1276,11 @@ Wick.Clip = class extends Wick.Tickable {
    * The Y position of the clip.
    * @type {number}
    */
+
+  set position([x,y]) {
+    this.x = x;
+    this.y = y;
+  }
 
 
   get y() {
@@ -1311,19 +1326,23 @@ Wick.Clip = class extends Wick.Tickable {
 
     this._onDirtyTransform();
   }
-  /**
+ 
+
+  set scale(value) {
+    this.scaleY = value;
+    this.scaleX = value;
+  }
+
+ /**
    * The width of the clip.
    * @type {number}
    */
-
-
   get width() {
     return this.isRoot ? this.project.width : this.bounds.width * this.scaleX;
   }
 
   set width(width) {
     this.scaleX = width / this.width * this.scaleX;
-
     this._onDirtyTransform();
   }
   /**
@@ -1356,12 +1375,11 @@ Wick.Clip = class extends Wick.Tickable {
 
     this._onDirtyTransform();
   }
+
   /**
    * The opacity of the clip.
    * @type {number}
    */
-
-
   get opacity() {
     return this.transformation.opacity;
   }
@@ -1371,12 +1389,106 @@ Wick.Clip = class extends Wick.Tickable {
     opacity = Math.max(0, opacity);
     this.transformation.opacity = opacity;
   }
+
+  /**
+   * depth - Send clip to Back
+   * designed by pumkinhead
+   */
+  sendToBack() {
+    let siblings = this.parentFrame._children;
+    let index = this.depth;
+    
+    siblings.splice(index, 1);
+    siblings.unshift(this);
+    this._depth = 0;
+  }
+
+  /**
+   * depth - Send clip to Front
+   * designed by pumkinhead
+   */
+  sendToFront() {
+    let siblings = this.parentFrame._children;
+    let index = this.depth;
+    
+    siblings.splice(index, 1);
+    siblings.push(this);
+    this._depth = siblings.length-1;
+  }
+
+  /**
+   * depth - Send clip to Forward a 'num' times
+   * designed by pumkinhead
+   */
+  sendForward(num) {
+    let siblings = this.parentFrame._children;
+    let index = this.depth;
+    
+    let newIndex = index + num;
+    if (newIndex >= siblings.length) newIndex = siblings.length - 1;
+    if (newIndex < 0) newIndex = 0;
+    
+    siblings.splice(index, 1);
+    siblings.splice(newIndex, 0, this);
+    this._depth = newIndex;
+  }
+
+  /**
+   * Swap Depths between this and other clip within th same parent frame
+   */
+  swapDepth(otherClip) {
+    let siblings = this.parentFrame._children;
+    let thisIndex = this.depth;
+    let otherIndex = siblings.indexOf(otherClip);
+
+    if(thisIndex>=0 && otherIndex>=0) {
+      siblings[thisIndex] = otherClip;
+      siblings[otherIndex] = this;
+      this._depth = otherIndex;
+    }
+    else {
+      throw new Error("Clips don't belog to the same Layer");
+    }
+  }
+
+  /**
+   * Get depth number with respect to their frame's siblings
+   * @type {number} depth number
+   */
+  get depth() {
+      this._depth = this.parentFrame._children.indexOf(this);
+      return this._depth;
+  }
+
+  // 3 layers want to move from zero to 2
+  moveToLayer(layer) {
+    let siblings = this.parentFrame._children;
+    let TM = this.parentFrame.parentTimeline;
+    let toLayer = layer;
+    let index = this.depth;
+
+    if(toLayer >= TM.layers.length) {
+      toLayer = TM.layers.length - 1;
+    } else if(toLayer<0) {
+      toLayer = 0;
+    }
+  
+    let dFrame = panther.orderedLayers[toLayer][panther.focus.timeline.playheadPosition-1];
+
+    if(dFrame === undefined || dFrame === null) {
+        throw new Error("There is no frame associated to the Layer number");
+        return;
+    }
+
+    siblings.splice(index, 1);
+    dFrame.addClip(this);
+  }
+  
+
   /**
    * Copy this clip, and add the copy to the same frame as the original clip.
    * @returns {Wick.Clip} the result of the clone.
    */
-
-
   clone() {
     var clone = this.copy();
     clone.identifier = null;
