@@ -1,5 +1,5 @@
 /*Wick Engine https://github.com/Wicklets/wick-engine*/
-var WICK_ENGINE_BUILD_VERSION = "2021.11.17.20.48.12";
+var WICK_ENGINE_BUILD_VERSION = "2021.11.18.22.29.13";
 /*!
  * Paper.js v0.12.4 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -50191,6 +50191,7 @@ Wick.Project = class extends Wick.Base {
     this.libClipAssets = [];
     this.dynamicClips = [];
     this.orderedLayers = [];
+    this.t = 0;
   }
 
   markClipQuadtreeDirty(clip) {
@@ -51811,6 +51812,7 @@ Wick.Project = class extends Wick.Base {
 
 
   play(args) {
+    this.playArgs = args;
     if (!args) args = {};
     if (!args.onError) args.onError = () => {};
     if (!args.onBeforeTick) args.onBeforeTick = () => {};
@@ -51821,6 +51823,7 @@ Wick.Project = class extends Wick.Base {
     this.loadLibClips();
     this.loadLibClipsToMemory();
     this.orderDynamicFrames();
+    this.t = 0;
 
     if (this._tickIntervalID) {
       this.stop();
@@ -51828,25 +51831,43 @@ Wick.Project = class extends Wick.Base {
 
     this.error = null;
     this.history.saveSnapshot('state-before-play');
-    this.selection.clear(); // Start tick loop
+    this.selection.clear();
+    this.t = 0;
 
-    this._tickIntervalID = setInterval(() => {
-      args.onBeforeTick();
-      this.tools.interact.determineMouseTargets(); // console.time('tick');
+    if (this.framerate > 60) {
+      this.framerate = 60;
+    } else if (this.framerate < 1) {
+      this.framerate = 1;
+    } // This system will only lock the following framerates:
+    // 60, 30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1
 
-      var error = this.tick(); // console.timeEnd('tick');
+
+    this.framerateDivider = Math.floor(60 / this.framerate);
+    requestAnimationFrame(this.animate);
+  }
+
+  animate() {
+    if (panther._playing) {
+      requestAnimationFrame(panther.animate);
+      panther.t += 1;
+      if (panther.t < panther.framerateDivider) return;
+      panther.t = 0;
+      panther.playArgs.onBeforeTick();
+      panther.tools.interact.determineMouseTargets(); // console.time('tick');
+
+      var error = panther.tick(); // console.timeEnd('tick');
       // console.time('update');
 
-      this.view.paper.view.update(); // console.timeEnd('update');
+      panther.view.paper.view.update(); // console.timeEnd('update');
 
       if (error) {
-        this.stop();
+        panther.stop();
         return;
       } // console.time('afterTick');
 
 
-      args.onAfterTick(); // console.timeEnd('afterTick');
-    }, 1000 / this.framerate);
+      panther.playArgs.onAfterTick(); // console.timeEnd('afterTick');
+    }
   }
   /**
    * Ticks the project.
