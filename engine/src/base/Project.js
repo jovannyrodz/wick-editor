@@ -1653,9 +1653,8 @@ Wick.Project = class extends Wick.Base {
 
         this.error = null;
         this.history.saveSnapshot('state-before-play');
-
         this.selection.clear();
-        this.t = -10;
+        
        
         if(this.framerate>60) {
             this.framerate = 60;
@@ -1665,6 +1664,7 @@ Wick.Project = class extends Wick.Base {
 
         // This system will only lock the following framerates:
         // 60, 30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1
+        this.t = -10;
         this.framerateDivider = Math.floor(60/this.framerate)
         requestAnimationFrame(this.animate);
     }
@@ -1745,8 +1745,8 @@ Wick.Project = class extends Wick.Base {
                 clip.scheduleScript('unload');
             });
         });
-        this.runScheduledScripts();
 
+        this.runScheduledScripts();
         this.stopAllSounds();
 
         // Loading the snapshot to restore project state also moves the playhead back to where it was originally.
@@ -1775,7 +1775,6 @@ Wick.Project = class extends Wick.Base {
         }
 
         this.resetCache();
-
         delete window._scriptOnErrorCallback;
     }
 

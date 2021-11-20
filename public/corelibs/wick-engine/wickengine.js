@@ -1,5 +1,9 @@
 /*Wick Engine https://github.com/Wicklets/wick-engine*/
+<<<<<<< HEAD
 var WICK_ENGINE_BUILD_VERSION = "2021.11.20.17.26.36";
+=======
+var WICK_ENGINE_BUILD_VERSION = "2021.11.19.23.2.57";
+>>>>>>> master
 /*!
  * Paper.js v0.12.4 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -51823,7 +51827,10 @@ Wick.Project = class extends Wick.Base {
     this.error = null;
     this.history.saveSnapshot('state-before-play');
     this.selection.clear();
+<<<<<<< HEAD
     this.t = -10;
+=======
+>>>>>>> master
 
     if (this.framerate > 60) {
       this.framerate = 60;
@@ -51833,6 +51840,7 @@ Wick.Project = class extends Wick.Base {
     // 60, 30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1
 
 
+    this.t = -10;
     this.framerateDivider = Math.floor(60 / this.framerate);
     requestAnimationFrame(this.animate);
   }
