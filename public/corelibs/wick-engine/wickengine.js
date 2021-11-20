@@ -1,5 +1,5 @@
 /*Wick Engine https://github.com/Wicklets/wick-engine*/
-var WICK_ENGINE_BUILD_VERSION = "2021.11.18.22.29.13";
+var WICK_ENGINE_BUILD_VERSION = "2021.11.19.23.2.57";
 /*!
  * Paper.js v0.12.4 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -50141,7 +50141,6 @@ Wick.Project = class extends Wick.Base {
     this._keysDown = [];
     this._keysLastDown = [];
     this._currentKey = null;
-    this._tickIntervalID = null;
     this._hideCursor = false;
     this._muted = false;
     this._publishedMode = false; // Review the publishedMode setter for rules.
@@ -50191,7 +50190,6 @@ Wick.Project = class extends Wick.Base {
     this.libClipAssets = [];
     this.dynamicClips = [];
     this.orderedLayers = [];
-    this.t = 0;
   }
 
   markClipQuadtreeDirty(clip) {
@@ -51823,16 +51821,9 @@ Wick.Project = class extends Wick.Base {
     this.loadLibClips();
     this.loadLibClipsToMemory();
     this.orderDynamicFrames();
-    this.t = 0;
-
-    if (this._tickIntervalID) {
-      this.stop();
-    }
-
     this.error = null;
     this.history.saveSnapshot('state-before-play');
     this.selection.clear();
-    this.t = 0;
 
     if (this.framerate > 60) {
       this.framerate = 60;
@@ -51842,6 +51833,7 @@ Wick.Project = class extends Wick.Base {
     // 60, 30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1
 
 
+    this.t = -10;
     this.framerateDivider = Math.floor(60 / this.framerate);
     requestAnimationFrame(this.animate);
   }
@@ -51922,9 +51914,7 @@ Wick.Project = class extends Wick.Base {
       });
     });
     this.runScheduledScripts();
-    this.stopAllSounds();
-    clearInterval(this._tickIntervalID);
-    this._tickIntervalID = null; // Loading the snapshot to restore project state also moves the playhead back to where it was originally.
+    this.stopAllSounds(); // Loading the snapshot to restore project state also moves the playhead back to where it was originally.
     // We actually don't want this, preview play should actually move the playhead after it's stopped.
 
     var currentPlayhead = this.focus.timeline.playheadPosition; // Load the state of the project before it was played
