@@ -1705,10 +1705,8 @@ Wick.Project = class extends Wick.Base {
         // Process input
         this._mousePosition = this.tools.interact.mousePosition;
         this._isMouseDown = this.tools.interact.mouseIsDown;
-
         this._keysDown = this.tools.interact.keysDown;
         this._currentKey = this.tools.interact.lastKeyDown;
-
         this._mouseTargets = this.tools.interact.mouseTargets;
 
         // Reset scripts before ticking
@@ -1716,11 +1714,8 @@ Wick.Project = class extends Wick.Base {
 
         // Tick the focused clip
         this.focus._attachChildClipReferences();
-
         this.focus.tick();
-
         this._quadtree.clean();
-
         this.runScheduledScripts();
 
         // Save the current keysDown
@@ -1746,6 +1741,7 @@ Wick.Project = class extends Wick.Base {
         // Run unload scripts on all objects
         this.getAllFrames().forEach(frame => {
             frame.clips.forEach(clip => {
+                clip.removeDynamicShadow();
                 clip.scheduleScript('unload');
             });
         });

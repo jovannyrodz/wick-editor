@@ -65,13 +65,7 @@ Wick.Clip = class extends Wick.Tickable {
 
     this._clones = []; //this._memoizedConvexHull = null;
     this._depth = -1;
-    try
-    {
-      //this.importClipToLib();
-    }
-    catch{
-      console.log("Try error");
-    }
+    this._dynamicShadow = false;
   }
 
   
@@ -428,6 +422,77 @@ Wick.Clip = class extends Wick.Tickable {
    * @returns {Wick.Base[]} the objects that were inside the clip.
    */
 
+
+  /**
+   * Remove a clone from the clones array by uuid.
+   * @param {string} colorHEX RGB HEX code 
+   * @param {int}    blur blur value of the glow
+   */
+  addGlow(colorHEX,blur) {
+    let rgb = Array.from(colorHEX);
+    if (rgb.length != 6) return;
+
+    try{
+      var r = parseInt((rgb[0]+rgb[1]),16)/255;
+      var g = parseInt((rgb[2]+rgb[3]),16)/255;
+      var b = parseInt((rgb[4]+rgb[5]),16)/255;
+    } catch {
+      return;
+    }
+
+    this.timeline.activeFrames.forEach(frame => {
+      frame.paths.forEach(path => {
+        path.view.item.shadowColor  = new paper.Color(r, g, b);
+        path.view.item.shadowBlur   = blur;
+        path.view.item.shadowOffset = new paper.Point(0, 0);
+        path.updateJSON();
+      });
+    });
+    this._dynamicShadow = true;
+  }
+
+  /**
+   * Remove a clone from the clones array by uuid.
+   * @param {int}    intensity from 0 to 1 
+   * @param {int}    blur blur value of the shadow
+   * @param {offset} offset array of 2 [x,y] 
+   */
+  addShadow(args = {intensity:1, blur:5, offset:[5,5]}) {
+    if(!args.intensity) args.intensity = 0.5;
+    if(!args.blur)      args.blur      = 5;
+    if(!args.offset)    args.offset    = [5,5];
+    
+    if(args.intensity>1) {
+      args.intensity = 1;
+    } else if(args.intensity<0) {
+      args.intensity = 0;
+    }
+    
+    this.timeline.activeFrames.forEach(frame => {
+      frame.paths.forEach(path => {
+        path.view.item.shadowColor  = new paper.Color(0, 0, 0);
+        path.view.item.shadowColor.alpha = args.intensity;
+        path.view.item.shadowBlur   = args.blur;
+        path.view.item.shadowOffset = new paper.Point(args.offset[0], args.offset[1]);
+        path.updateJSON();
+      });
+    });
+    this._dynamicShadow = true;
+  }
+
+  removeDynamicShadow() {
+    if(!this._dynamicShadow) return;
+    this.timeline.activeFrames.forEach(frame => {
+      frame.paths.forEach(path => {
+        path.view.item.shadowColor  = new paper.Color(0, 0, 0);
+        path.view.item.shadowColor.alpha = 0;
+        path.view.item.shadowBlur   = 0;
+        path.view.item.shadowOffset = new paper.Point(0,0);
+        path.updateJSON();
+      });
+    });
+    this._dynamicShadow = false;
+  }
 
   breakApart() {
     var leftovers = [];
