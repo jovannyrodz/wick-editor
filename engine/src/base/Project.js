@@ -70,8 +70,6 @@ Wick.Project = class extends Wick.Base {
         this._keysLastDown = [];
         this._currentKey = null;
 
-        this._tickIntervalID = null;
-
         this._hideCursor = false;
         this._muted = false;
         this._publishedMode = false; // Review the publishedMode setter for rules.
@@ -125,7 +123,6 @@ Wick.Project = class extends Wick.Base {
         this.libClipAssets = [];
         this.dynamicClips = [];
         this.orderedLayers = [];
-        this.t = 0;
     }
 
 
@@ -1654,19 +1651,11 @@ Wick.Project = class extends Wick.Base {
         this.loadLibClipsToMemory();
         this.orderDynamicFrames();
 
-        this.t = 0;
-
-
-        if (this._tickIntervalID) {
-            this.stop();
-        }
-
         this.error = null;
-
         this.history.saveSnapshot('state-before-play');
 
         this.selection.clear();
-        this.t = 0;
+        this.t = -10;
        
         if(this.framerate>60) {
             this.framerate = 60;
@@ -1716,10 +1705,8 @@ Wick.Project = class extends Wick.Base {
         // Process input
         this._mousePosition = this.tools.interact.mousePosition;
         this._isMouseDown = this.tools.interact.mouseIsDown;
-
         this._keysDown = this.tools.interact.keysDown;
         this._currentKey = this.tools.interact.lastKeyDown;
-
         this._mouseTargets = this.tools.interact.mouseTargets;
 
         // Reset scripts before ticking
@@ -1727,11 +1714,8 @@ Wick.Project = class extends Wick.Base {
 
         // Tick the focused clip
         this.focus._attachChildClipReferences();
-
         this.focus.tick();
-
         this._quadtree.clean();
-
         this.runScheduledScripts();
 
         // Save the current keysDown
@@ -1757,15 +1741,13 @@ Wick.Project = class extends Wick.Base {
         // Run unload scripts on all objects
         this.getAllFrames().forEach(frame => {
             frame.clips.forEach(clip => {
+                clip.removeDynamicShadow();
                 clip.scheduleScript('unload');
             });
         });
         this.runScheduledScripts();
 
         this.stopAllSounds();
-
-        clearInterval(this._tickIntervalID);
-        this._tickIntervalID = null;
 
         // Loading the snapshot to restore project state also moves the playhead back to where it was originally.
         // We actually don't want this, preview play should actually move the playhead after it's stopped.

@@ -113,8 +113,6 @@ GlobalAPI = class {
             return;
         }
 
-        //args = {x:0, y:0, scaleX:9999, scaleY:9999, opacity:1, rotation:0, layer:0}
-
         if(args.x) {
             x = args.x;
         }
@@ -159,7 +157,7 @@ GlobalAPI = class {
             throw new Error("There is no frame associated to the Layer number");
             return;
         }
-        
+
         dFrame.addClip(dClip);
         let cloneClip = dClip.clone();
         dFrame.removeChild(dClip);
