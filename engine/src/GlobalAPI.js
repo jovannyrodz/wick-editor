@@ -67,91 +67,81 @@ GlobalAPI = class {
         return members;
     }
 
-    attachClip(assetName, args = {x:0, y:0, scaleX:9999, scaleY:9999, scale:9999, opacity:1, rotation:0, layer:0}) {
+    attachClip(assetName, args = {x:0, y:0, position:[0,0], offset:[0,0], scaleX:9999, scaleY:9999, scale:9999, opacity:1, rotation:0, layer:0}) {
         let asName = assetName;
-        let pp = project.project;
         let p  = project;
         let dClip = null;
-        let x  = 0;
-        let y  = 0;
-        let sx = 9999;
-        let sy = 9999;
-        let op = 1;
-        let rt = 0;
-        let ly = 0;
-        let sc = 9999;
+        let isAClip = false;
+        let isUnknown = false;
+        let assetFound = false;
+        let asset = undefined;
+
+        if(!args.x)        args.x        = 0;
+        if(!args.y)        args.y        = 0;
+        if(!args.opacity)  args.opacity  = 1;
+        if(!args.rotation) args.rotation = 0;
+        if(!args.layer)    args.layer    = 0;
+        if(!args.offset)   args.offset   = [0,0];
 
         // Add extension
-        if(!asName.includes(".wickobj")) {
-            asName+= ".wickobj"
+        if(asName.includes(".")) {
+            if(asName.toLowerCase().includes(".wickobj"))  isAClip = true;
+            else if(asName.toLowerCase().includes(".png")) isAClip = false;
+            else return;
+        } else {
+            isUnknown = true;
         }
 
-        let asset = pp.getAssetByName(asName);
-        let assetFound = false;
+        if(isUnknown) {
+            asset = panther.getAssetByName(asName+".wickobj");
+            if(asset) {
+                isAClip   = true;
+                isUnknown = false;
+            } 
+        }
 
-        for(let clipLibAsset of pp.libClipAssets) {
-            if(clipLibAsset == asset){
-                assetFound = true;
-                break;
+        if(isUnknown) {
+            asset = panther.getAssetByName(asName+".png");
+            if(asset) {
+                isAClip   = false;
+                isUnknown = false;
+            } 
+        }
+
+        if(isUnknown) return;
+        
+        if(isAClip) { // is a clip...
+            for(let clipLibAsset of panther.libClipAssets) {
+                if(clipLibAsset == asset){
+                    assetFound = true;
+                    break;
+                }
             }
-        }
 
-        if(!assetFound) {
-            return;
-        }
+            if(!assetFound) return;
 
-        let clipFound = false;
-        for(let dynClip of pp.dynamicClips) {
-            if(dynClip.assetSourceUUID == asset.uuid) {
-                dClip = dynClip;
-                clipFound = true;
-                break;
+            let clipFound = false;
+            for(let dynClip of panther.dynamicClips) {
+                if(dynClip.assetSourceUUID == asset.uuid) {
+                    dClip = dynClip;
+                    clipFound = true;
+                    break;
+                }
             }
+
+            if(!clipFound) return;
+        }
+        else { // is a png
+            let path  = Wick.Path.createImagePathSync(asset);
+            dClip = new Wick.Clip({identifier:"pngClipDyn", objects:[path]});
+            path.x = args.offset[0];
+            path.y = args.offset[1];
         }
 
-        if(!clipFound) {
-            return;
-        }
+        if(args.layer >= p.timeline.layers.length) args.layer = p.timeline.layers.length-1;
+        else if(args.layer <0)                     args.layer = 0;
 
-        if(args.x) {
-            x = args.x;
-        }
-
-        if(args.y) {
-            y = args.y;
-        }
-
-        if(args.scaleX) {
-            sx = args.scaleX;
-        }
-
-        if(args.scaleY) {
-            sy = args.scaleY;
-        }
-
-        if(args.scale) {
-            sc = args.scale;
-        }
-
-        if(args.opacity) {
-            op = args.opacity;
-        }
-
-        if(args.rotation) {
-            rt = args.rotation;
-        }
-
-        if(args.layer) {
-            ly = args.layer;
-        }
-
-        if(ly >= p.timeline.layers.length) {
-            ly = p.timeline.layers.length-1;
-        } else if(ly<0) {
-            ly = 0;
-        }
-
-        let dFrame = pp.orderedLayers[ly][pp.focus.timeline.playheadPosition-1];
+        let dFrame = panther.orderedLayers[args.layer][panther.focus.timeline.playheadPosition-1];
 
         if(dFrame === undefined || dFrame === null) {
             throw new Error("There is no frame associated to the Layer number");
@@ -162,22 +152,17 @@ GlobalAPI = class {
         let cloneClip = dClip.clone();
         dFrame.removeChild(dClip);
 
-        cloneClip.x = x;
-        cloneClip.y = y;
-        cloneClip.rotation = rt;
-        cloneClip.opacity = op;
+        cloneClip.x = args.x;
+        cloneClip.y = args.y;
+
+        if(args.position) cloneClip.position = args.position;
+
+        cloneClip.rotation = args.rotation;
+        cloneClip.opacity  = args.opacity;
         
-        if(sx!=9999) {
-            cloneClip.scaleX = sx;
-        }
-
-        if(sy!=9999) {
-            cloneClip.scaleY = sy;
-        }
-
-        if(sc!=9999) {
-            cloneClip.scale = sc;
-        }
+        if(args.scaleX && args.scaleX!=9999) cloneClip.scaleX = args.scaleX;
+        if(args.scaleY && args.scaleY!=9999) cloneClip.scaleY = args.scaleY;
+        if(args.scale  && args.scale!=9999 ) cloneClip.scale  = args.scale;
 
         return cloneClip;
     }

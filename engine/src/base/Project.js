@@ -1642,6 +1642,8 @@ Wick.Project = class extends Wick.Base {
         if (!args.onBeforeTick) args.onBeforeTick = () => {};
         if (!args.onAfterTick) args.onAfterTick = () => {};
 
+        if(document.title.includes("Loading")) document.title = this.name;
+
         window._scriptOnErrorCallback = args.onError;
 
         this._playing = true;
